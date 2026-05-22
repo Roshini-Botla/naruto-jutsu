@@ -6,7 +6,7 @@ A browser-based app that uses your webcam, hand tracking, and machine learning t
 
 | Gesture | Jutsu |
 |---|---|
-| 🤞 Both hands — cross-finger sign | Shadow Clone |
+| 🤞 Both hands — classic Naruto Shadow Clone hand sign | Shadow Clone |
 | 👋 Right hand open | Rasenshuriken |
 | 🖐️ Left hand open | Chidori |
 
