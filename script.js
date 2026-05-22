@@ -1,10 +1,20 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const rasenVideo = document.getElementById("rasenVideo");
+const chidoriVideo = document.getElementById("chidoriVideo");
+rasenVideo.playbackRate = 2.0;
+chidoriVideo.playbackRate = 2.0;
+let rasenPwr = 0;
+let chidoriPwr = 0;
+let rasenWasOpen = false;
+let chidoriWasOpen = false;
 
 let clonesTriggered = false;
 let cloneStartTime = null;
 let mask = null;
+
+let jutsuActive = false;
 
 // ----------------------
 // Trained gesture model
@@ -161,6 +171,25 @@ function drawSmokes() {
 // ----------------------
 // Results on loop
 // ----------------------
+
+function checkOpen(landmarks) {
+  const wrist = landmarks[0];
+  const tips = [8, 12, 16, 20];
+  const pips = [6, 10, 14, 18];
+  let count = 0;
+
+  for (let i = 0; i < tips.length; i++) {
+    const tip = landmarks[tips[i]];
+    const pip = landmarks[pips[i]];
+    if (Math.hypot(tip.x - wrist.x, tip.y - wrist.y) >
+        Math.hypot(pip.x - wrist.x, pip.y - wrist.y)*1.2) {
+      count++;
+    }
+  }
+
+  return count >= 4;
+}
+
 holistic.onResults((res) => {
   if (!mask) return;
 
@@ -179,7 +208,8 @@ holistic.onResults((res) => {
       clonesTriggered = true;
       cloneStartTime = performance.now();
       console.log("CLONE TRIGGERED");
-      setTimeout(resetClones, 10000); // clones disappear after 5 seconds
+      jutsuActive = true;
+      setTimeout(resetClones, 5000); // clones disappear after 5 seconds
     }
   }
 
@@ -202,6 +232,64 @@ holistic.onResults((res) => {
   } else {
     ctx.drawImage(person, 0, 0);
   }
+
+ if (!jutsuActive) {
+  // Rasengan - right hand
+  if (res.rightHandLandmarks) {
+    const open = checkOpen(res.rightHandLandmarks);
+    rasenPwr += open ? 0.05 : -0.15;
+    rasenPwr = Math.max(0, Math.min(1, rasenPwr));
+
+    if (open && !rasenWasOpen) {
+      rasenVideo.currentTime = 0;
+      rasenVideo.play();
+    }
+    rasenWasOpen = open;
+  }
+
+  // Chidori - left hand
+  if (res.leftHandLandmarks) {
+    const open = checkOpen(res.leftHandLandmarks);
+    chidoriPwr += open ? 0.05 : -0.15;
+    chidoriPwr = Math.max(0, Math.min(1, chidoriPwr));
+
+    if (open && !chidoriWasOpen) {
+      chidoriVideo.currentTime = 0;
+      chidoriVideo.play();
+    }
+    chidoriWasOpen = open;
+  }
+}
+
+// Draw Rasengan on canvas
+if (rasenPwr > 0.01 && res.rightHandLandmarks) {
+  const wrist = res.rightHandLandmarks[0];
+  const knuckle = res.rightHandLandmarks[9];
+  const x = ((wrist.x + knuckle.x) / 2) * canvas.width;
+  const y = ((wrist.y + knuckle.y) / 2) * canvas.height - 120;
+  const size = 500 * rasenPwr;
+
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha = rasenPwr;
+  ctx.drawImage(rasenVideo, x - size / 2, y - size / 2, size, size);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// Draw Chidori on canvas
+if (chidoriPwr > 0.01 && res.leftHandLandmarks) {
+  const wrist = res.leftHandLandmarks[0];
+  const knuckle = res.leftHandLandmarks[9];
+  const x = ((wrist.x + knuckle.x) / 2) * canvas.width - 75;
+  const y = ((wrist.y + knuckle.y) / 2) * canvas.height - 50;
+  const size = 500 * chidoriPwr;
+
+  ctx.globalCompositeOperation = 'screen';
+  ctx.globalAlpha = chidoriPwr;
+  ctx.drawImage(chidoriVideo, x - size / 2, y - size / 2, size, size);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+}
 
   if (res.rightHandLandmarks) drawFingerSkeleton(res.rightHandLandmarks);
   if (res.leftHandLandmarks) drawFingerSkeleton(res.leftHandLandmarks);
@@ -256,7 +344,7 @@ const FINGER_INDICES = {
 };
 
 function drawFingerSkeleton(lm) {
-  ctx.strokeStyle = "lime";
+  ctx.strokeStyle = "#00d4ff";
   ctx.lineWidth = 2;
 
   for (const indices of Object.values(FINGER_INDICES)) {
@@ -275,11 +363,11 @@ function drawFingerSkeleton(lm) {
     ctx.arc(
       point.x * canvas.width,
       point.y * canvas.height,
-      3,
+      1.5,
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "#ffffff";
     ctx.fill();
   });
 }
@@ -312,4 +400,5 @@ function resetClones() {
   clonesTriggered = false;
   cloneStartTime = null;
   customClones.forEach(cl => cl.smokeSpawned = false);
+  jutsuActive = false;
 }
