@@ -196,7 +196,7 @@ holistic.onResults((res) => {
       }
     });
 
-    toggleImage();
+    // toggleImage();
     drawClones(person);
     drawSmokes();
   } else {

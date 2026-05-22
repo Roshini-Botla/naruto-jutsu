@@ -113,3 +113,7 @@ h1 {
 .hidden {
   display: none;
 }
+
+.video-overlay-btn {
+  display: none;
+}
