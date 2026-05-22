@@ -1,75 +1,96 @@
-# Naruto Shadow Clone
+# Naruto Jutsu 🍥
 
-A browser-based app that uses your webcam, hand tracking, and a custom-trained gesture model to trigger Naruto shadow clone effect in real time.
+A browser-based app that uses your webcam, hand tracking, and machine learning to trigger three Naruto jutsu effects in real time.
 
-> **⚠️ Important:**
-> 
-> - The trained hand sign dataset and model files are **not included** in this repository. I encourage you to use `trainer.html` to train the model yourself! See instructions below or in this video: 
-> - **Browser:** Chrome recommended (may glitch on Safari).
-> - **Webcam**: A webcam is required
+## Jutsu
 
-## Note:
-
-- Yes, it’s an ML project in JS and not Python :P hehe
-- I am not a MLE or Data Scientist. My goal was to make it exist, not to make it optimal (this can be done by you!)
-- I used a simple neural network in my version (see `trainer.js`). For those who wish to get better performance, I encourage you to mess around with the topology of the model or even try new models entirely
-
-## Files Included
-
-| File | Description |
-| --- | --- |
-| `index.html` | Main app: webcam feed with clone jutsu |
-| `script.js` | Clone rendering, gesture detection, smoke effects |
-| `styles.css` | Styling for the main page |
-| `trainer.html` | UI for recording hand sign samples and training the model |
-| `trainer.js` | Training logic and model definition: captures hand landmarks and exports the model |
-| `trainer.css` | Styling for the trainer page |
-| `assets/` | Smoke sprites and overlay button images |
+| Gesture | Jutsu |
+|---|---|
+| 🤞 Both hands — cross-finger sign | Shadow Clone |
+| 👋 Right hand open | Rasenshuriken |
+| 🖐️ Left hand open | Chidori |
 
 ## How It Works
 
-1. **MediaPipe Holistic** tracks your hand landmarks through the webcam
-2. **MediaPipe Selfie Segmentation** isolates your body from the background
-3. A neural network **TensorFlow.js model** (trained by you) recognizes a specific two-hand gesture.
-4. When the gesture is detected with high confidence, shadow clones spawn with smoke effects
+- **MediaPipe Holistic** tracks hand landmarks through the webcam
+- **MediaPipe Selfie Segmentation** isolates your body from the background
+- A **TensorFlow.js neural network** (trained by you) recognizes the Shadow Clone hand sign
+- **Open hand detection** using wrist-to-fingertip distance triggers Rasenshuriken and Chidori
+- All effects are rendered directly onto an HTML5 **canvas** element in real time
+
+## My Contributions
+
+This project is an extension of two original projects (credited below). Here is what I added and changed:
+
+- Integrated both original projects into a single unified app
+- Added **Rasenshuriken** (right hand) and **Chidori** (left hand) jutsu effects
+- Implemented open hand detection using MediaPipe landmark distance calculations
+- Added smooth fade in/out for jutsu effects using a power value system
+- **Canvas-based video rendering** — the original project by gprem09 used CSS positioning to place video elements over the page. In this project, each frame of the jutsu video is drawn directly onto the HTML5 canvas using `ctx.drawImage()` with `globalCompositeOperation: 'screen'` to remove the black background. This approach is more consistent with the rest of the canvas-based rendering pipeline and gives better control over blending and positioning
+- Added auto-reset for Shadow Clone after 10 seconds
+- Prevented jutsu conflicts — Rasenshuriken and Chidori won't trigger during Shadow Clone
+- Cleaned up the UI to a minimal fullscreen experience
 
 ## Getting Started
 
-### 1. Start up your local server
+### Prerequisites
+- Node.js installed
+- A webcam
+- Google Chrome (recommended)
 
-1. Ensure you have [Node.js](https://nodejs.org/en) installed as we will being `npx` to serve the project locally (required as using our webcam). 
-2. From the root of the repo, run `npx serve -p <CHOOSE A PORT>` to start a local server (e.g., `npx serve -p 3000` will serve the project at `http://localhost:3000/` if port 3000 is available). The following steps will assume port 3000 is used.
-3. To navigate to each HTML file/page, add it after the link 
-    1. trainer.html —> `http://localhost:3000/trainer`
-    2. index.html —> `http://localhost:3000/index` (or just `http://localhost:3000` )
+### 1. Clone the repo
 
-### 2. Train Your Gesture Model
+```bash
+git clone https://github.com/Roshini-Botla/naruto-jutsu.git
+cd naruto-jutsu
+```
 
-1. In Chrome, navigate to the trainer page (ex. `http://localhost:3000/trainer`) 
-2. Record samples of your chosen hand sign (both hands visible)
-3. Record negative samples (random hand positions, edge cases)
-4. Click train → this generates `gesture-model.json` and `gesture-model.weights.bin`
-5. Place the exported files in the project root (same folder as the main app)
+### 2. Start the local server
 
-### 3. Run the App
+```bash
+npx serve -p 3000
+```
 
-1. In Chrome, navigate to the home/index page (ex. `http://localhost:3000/`) 
-2. Allow camera access
-3. Perform your trained hand sign and your clones will appear!
+### 3. Train your gesture model
 
-## Customization
+Navigate to `http://localhost:3000/trainer` in Chrome.
 
-In `script.js` you can tweak:
+- Record **60+ samples** of your chosen Shadow Clone hand sign
+- Record **60+ samples** of other random hand positions
+- Click **Train Model**
+- Click **Save Model** — this downloads `gesture-model.json` and `gesture-model.weights.bin`
+- Place both files in the project root folder
 
-- **Clone positions, sizes, and delay times** in the `customClones` array
-- **Confidence threshold** in the `predictGesture` function (default: `0.999`)
+### 4. Run the app
 
-In `trainer.js` you can tweak the model topology and training process. The current implementation was sufficient for my purposes but the model can definitely be optimized. 
+Navigate to `http://localhost:3000` in Chrome, allow camera access, and perform your jutsu! 🔥
 
-## Additional Dependencies
+## Files
 
-All loaded via the [jsdelivr CDN](https://www.jsdelivr.com/), no installation required:
+| File | Description |
+|---|---|
+| `index.html` | Main app |
+| `script.js` | All jutsu logic — gesture detection, clone rendering, rasenshuriken, chidori, smoke effects |
+| `styles.css` | Minimal fullscreen styling |
+| `trainer.html` | UI for recording hand sign samples and training the model |
+| `trainer.js` | Training logic and model definition |
+| `assets/` | Smoke sprites, jutsu videos, overlay images |
+
+## Tech Stack
 
 - TensorFlow.js
 - MediaPipe Holistic
 - MediaPipe Selfie Segmentation
+- HTML5 Canvas
+- Vanilla JavaScript
+
+All dependencies loaded via CDN — no installation required.
+
+## Credits
+
+This project is built on top of two amazing open source projects:
+
+- **[nasha-wanich/naruto-shadow-clone-jutsu](https://github.com/nasha-wanich/naruto-shadow-clone-jutsu)** — Shadow Clone ML gesture detection, selfie segmentation, smoke effects, and the core canvas rendering pipeline
+- **[gprem09/naruto](https://github.com/gprem09/naruto)** — Rasenshuriken and Chidori video assets and the original open hand detection concept
+
+Full credit to both original authors. This project would not exist without their work!!
