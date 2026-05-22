@@ -179,6 +179,7 @@ holistic.onResults((res) => {
       clonesTriggered = true;
       cloneStartTime = performance.now();
       console.log("CLONE TRIGGERED");
+      setTimeout(resetClones, 10000); // clones disappear after 5 seconds
     }
   }
 
@@ -306,3 +307,9 @@ window.onload = () => {
   clonesTriggered = false;
   cloneStartTime = null;
 };
+
+function resetClones() {
+  clonesTriggered = false;
+  cloneStartTime = null;
+  customClones.forEach(cl => cl.smokeSpawned = false);
+}
